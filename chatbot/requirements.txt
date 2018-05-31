@@ -1,0 +1,6 @@
+spacy
+ldap3
+rasa_core == 0.9.0
+coloredlogs
+sklearn
+sklearn_crfsuite

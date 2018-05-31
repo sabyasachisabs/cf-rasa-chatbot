@@ -1,0 +1,30 @@
+{{define "config"}}{
+    "key": "hoff-bot-dos",
+    "name": "The Hoff, INI-DOS-FDN-ENB",
+    "description": "DOS Services support bot",
+    "vendor": {
+        "name": "DOS Services",
+        "url": "https://dos.corproot.net"
+    },
+    "links": {
+        "self": "{{.LocalBaseUrl}}/atlassian-connect.json",
+        "homepage": "{{.LocalBaseUrl}}/atlassian-connect.json"
+    },
+    "capabilities": {
+        "hipchatApiConsumer": {
+            "scopes": [
+                "send_notification"
+            ]
+        },
+        "installable": {
+            "callbackUrl": "{{.LocalBaseUrl}}/installable"
+        },
+        "webhook": {
+            "url": "{{.LocalBaseUrl}}/hook",
+            "pattern": ".*",
+            "event": "room_message",
+            "name": "The Hoff, INI-DOS-FDN-ENB"
+        }
+    }
+}
+{{end}}

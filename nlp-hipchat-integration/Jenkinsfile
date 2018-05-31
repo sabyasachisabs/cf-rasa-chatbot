@@ -1,0 +1,77 @@
+pipeline {
+  agent {
+    node {
+      label 'GO_BUILD_NLP'
+    }
+  }
+  environment {
+    MAIN_BRANCH = 'master'
+    BUILD_DIR = '/home/jenkins/workspace/nlp-hipchat-iapc'
+    BUILD_NAME = 'hipchat nlp integration'
+
+    ENVIRONMENT = 'NLP-dev'
+    CF_ORG = 'INI-DOS-FDN-ENB_Services'
+
+    HIPCHAT_SPAN_DEFAULT_START_TAG = '<span style="color: #757575;">'
+    HIPCHAT_SPAN_BOLD_START_TAG = '<span style="font-weight: 600;">'
+    HIPCHAT_SPAN_END_TAG = '</span>'
+    HIPCHAT_PIPELINE_LINK_WITH_STYLE = '<a href="$BLUE_OCEAN_URL"><span style="color: #ff4081; font-weight: 600; text-decoration: underline;">View Pipeline</span></a>'
+
+    ARTIFACTORY_SERVER_ID = 'SWISSCOM_ARTIFACTORY_SERVER'
+    ARTIFACTORY_TARGET_REPOSITORY = 'teamspace-generic'
+    ARTIFACTORY_TARGET_FOLDER = 'teamspace'
+  }
+  stages {
+    stage('build') {
+      steps {
+        dir(BUILD_DIR) {
+          script {
+            sh 'make build'
+          }
+        }
+      }
+    }
+    stage('package') {
+      steps {
+        dir(BUILD_DIR) {
+          script {
+            sh 'make package'
+          }
+        }
+      }
+    }
+    stage('cf login') {
+      steps {
+        dir(BUILD_DIR) {
+          script {
+            withCredentials([usernamePassword(credentialsId: 'NLP_HIPCHAT_IAPC', usernameVariable: 'CF_USER', passwordVariable: 'CF_PASS')]) {
+              sh 'echo CF_USER=$CF_USER CF_PASS=$CF_PASS && make cf-login'
+            }
+          }
+        }
+      }
+    }
+    stage('deploy to iapc') {
+      steps {
+        dir(BUILD_DIR) {
+          script {
+            withCredentials([usernamePassword(credentialsId: 'NLP_HIPCHAT_IAPC', usernameVariable: 'CF_USER', passwordVariable: 'CF_PASS')]) {
+              sh "make deploy"
+            }
+          }
+        }
+      }
+    }
+  }
+  post {
+    always {
+      deleteDir()
+    }
+    success {
+      hipchatSend notify: true, color: 'GREEN', message: HIPCHAT_SPAN_DEFAULT_START_TAG + '$BRANCH_NAME $BUILD_DISPLAY_NAME - ' + HIPCHAT_SPAN_BOLD_START_TAG + 'Job succeeded' + HIPCHAT_SPAN_END_TAG + ' after $BUILD_DURATION! ' + HIPCHAT_PIPELINE_LINK_WITH_STYLE + HIPCHAT_SPAN_END_TAG
+    }
+    failure {
+      hipchatSend notify: true, color: 'RED', message: HIPCHAT_SPAN_DEFAULT_START_TAG + '$BRANCH_NAME $BUILD_DISPLAY_NAME - ' + HIPCHAT_SPAN_BOLD_START_TAG + 'Job failed!' + HIPCHAT_SPAN_END_TAG + ' ' + HIPCHAT_PIPELINE_LINK_WITH_STYLE + HIPCHAT_SPAN_END_TAG
+    }
+  }
+}
