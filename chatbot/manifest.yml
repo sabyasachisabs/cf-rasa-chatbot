@@ -1,0 +1,14 @@
+name: chatbot
+memory: 4096M
+instances: 1
+path: ./
+buildpack: python_buildpack
+domains:
+- scapp-corp.swisscom.com
+hosts:
+- chatbot
+disk_quota: 4096M
+host: chatbot
+domain: apps.internal
+timeout: 180
+command: python run.py
