@@ -29,7 +29,7 @@ make run
 
 Rasa core server will be available on port 8080.
 
-## Deploy to iAPC
+## Deploy to PaaS (CloudFoundry)
 
 You can deploy the bot to iAPC using make script
 
